@@ -184,3 +184,7 @@ div.video video {
   /*finish triangle*/
   border-top: 8px solid #999;
 }
+.radio-link {
+  display: inline-block;
+  border: none;
+}

@@ -229,6 +229,26 @@ function isAllRowsHidden(value) {
     return value.hidden == false;
 }
 
+function hasPassed(value) {
+    return value.className.includes('passed');
+}
+
+function hasFailed(value) {
+    return value.className.includes('failed');
+}
+
+function hasPassedOrFailed(value) {
+    return value.className.includes('passed') || value.className.includes('failed');
+}
+
+function hasJiraLink(value) {
+    return value.className.includes('has-link');
+}
+
+function hasNoJiraLink(value) {
+    return !value.className.includes('has-link');
+}
+
 function filterTable(elem) { // eslint-disable-line no-unused-vars
     const outcomeAtt = 'data-test-result';
     const outcome = elem.getAttribute(outcomeAtt);
@@ -240,6 +260,40 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
     }
 
     const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+
+function hideAllRows() {
+    const rows = findAll('.results-table-row');
+    for(let i = 0; i < rows.length; i++){
+        rows[i].hidden = true;
+    }
+}
+
+function filterTableLink(elem) {
+    // hide all elements
+    hideAllRows()
+    const pass_selected = document.querySelector('[data-test-result="passed"]').checked;
+    const fail_selected = document.querySelector('[data-test-result="failed"]').checked;
+    var rows = []
+    if (pass_selected && fail_selected) {
+        rows = findAll('.results-table-row').filter(hasPassedOrFailed)
+    } else if (pass_selected) {
+        rows = findAll('.results-table-row').filter(hasPassed)
+    } else if (fail_selected) {
+        rows = findAll('.results-table-row').filter(hasFailed)
+    }
+    if(elem.value === 'has-link') {
+        // filter only has-link rows
+        rows = rows.filter(hasJiraLink);
+    } else if (elem.value === 'has-no-link') {
+        rows = rows.filter(hasNoJiraLink)
+    }
+    for(let i = 0; i < rows.length; i++){
+        rows[i].hidden = false;
+    }
     const allRowsHidden = rows.length == 0 ? true : false;
     const notFoundMessage = document.getElementById('not-found-message');
     notFoundMessage.hidden = !allRowsHidden;

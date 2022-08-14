@@ -28,6 +28,7 @@ class HTMLReport:
         self.errors = self.failed = 0
         self.passed = self.skipped = 0
         self.xfailed = self.xpassed = 0
+        self.links = 0
         has_rerun = config.pluginmanager.hasplugin("rerunfailures")
         self.rerun = 0 if has_rerun else None
         self.self_contained = config.getoption("self_contained_html")
@@ -35,13 +36,17 @@ class HTMLReport:
         self.reports = defaultdict(list)
 
     def _appendrow(self, outcome, report):
+        has_link = False
+        if hasattr(report, 'jira_link') and report.jira_link:
+            self.links += 1
+            has_link = True
         result = TestResult(outcome, report, self.logfile, self.config)
         if result.row_table is not None:
             index = bisect.bisect_right(self.results, result)
             self.results.insert(index, result)
             tbody = html.tbody(
                 result.row_table,
-                class_="{} results-table-row".format(result.outcome.lower()),
+                class_="{} {} results-table-row".format(result.outcome.lower(), 'has-link' if has_link else 'has-no-link'),
             )
             if result.row_extra is not None:
                 tbody.append(result.row_extra)
@@ -142,6 +147,18 @@ class HTMLReport:
             summary.append(outcome.summary_item)
             if i < len(outcomes):
                 summary.append(", ")
+                
+        jira_link_radio = '''<fieldset class="radio-link">
+            <div class="radio-link-div">
+                <input type="radio" class="radio" name="jira-link" value="has-link" onclick="filterTableLink(this);" id="id-link" />
+                <label for="id-link">Link</label>
+                <input type="radio" class="radio" name="jira-link" value="has-no-link" onclick="filterTableLink(this);" id="id-no-link" />
+                <label for="id-no-link">No Link</label>
+                <input type="radio" class="radio" name="jira-link" value="has-both" onclick="filterTableLink(this);" id="id-both" />
+                <label for="id-both">Both</label>
+            </div>
+            </fieldset>'''
+        summary.append(raw(jira_link_radio))
 
         cells = [
             html.th("Result", class_="sortable result initial-sort", col="result"),
