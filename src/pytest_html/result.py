@@ -249,7 +249,7 @@ class TestResult:
                 )
 
             html_div = html.a(
-                raw(base_extra_string.format(extra.get("content"))), href=content
+                raw(base_extra_string.format(extra.get("content"))), href=content,  target="_blank" if base_extra_class == 'image' else "_self"
             )
         elif self.self_contained:
             src = f"data:{extra.get('mime_type')};base64,{content}"
